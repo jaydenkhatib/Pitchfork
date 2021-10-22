@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+
+<meta charset="utf-8">
+
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<div id="chart"></div>
+
+<script>
+
+    var margin = {top: 10, right: 30, bottom: 60, left: 60},
+        width = 690 - margin.left - margin.right,
+        height = 600 - margin.top - margin.bottom;
+    
+    var svg = d3.select("#chart")
+      .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform",
+              "translate(" + margin.left + "," + margin.top + ")");
+    
+    d3.csv("https://raw.githubusercontent.com/jaydenkhatib/Pitchfork/main/pitchfork_new.csv", function(data) {
+    
+      var x = d3.scaleLinear()
+        .domain([0, 20])
+        .range([ 0, width ]);
+      svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+    
+      var y = d3.scaleLinear()
+        .domain([0, 150])
+        .range([ height, 0]);
+      svg.append("g")
+        .call(d3.axisLeft(y));
+
+    var tooltip = d3.select("#chart")
+        .append("div")
+        .style("opacity", 0)
+        .attr("class", "tooltip")
+        .style("background-color", "white")
+        .style("border-width", "0.5px")
+        .style("border-radius", "2px")
+        .style("padding", "5px")
+
+    var mouseover = function(d) {
+        tooltip
+        .style("opacity", 1)
+    }
+
+    var mousemove = function(d) {
+        tooltip
+        .html("This is " + d.album_name + " by " + d.artist_name)
+        .style("left", (d3.mouse(this)[0]+100) + "px")
+        .style("top", (d3.mouse(this)[1]) + "px")
+    }
+
+    var mouseleave = function(d) {
+        tooltip
+        .transition()
+        .duration(200)
+        .style("opacity", 0)
+    }
+    
+      svg.append('g')
+        .selectAll("dot")
+        .data(data)
+        .enter()
+        .append("circle")
+          .attr("cx", function (d) { return x(d.album_ranking); } )
+          .attr("cy", function (d) { return y(d.billboard_200_chart); } )
+          .attr("r", 9)
+          .style("fill", "#C4A6F8")
+        .on("mouseover", mouseover )
+        .on("mousemove", mousemove )
+        .on("mouseleave", mouseleave )
+    
+        svg.append("text")
+            .attr("class", "x label")
+            .attr("text-anchor", "end")
+            .attr("x", width)
+            .attr("y", height + 50)
+            .text("Pitchfork Best Album Ranking");
+
+        svg.append("text")
+            .attr("class", "y label")
+            .attr("text-anchor", "end")
+            .attr("y", - 50)
+            .attr("dy", ".75em")
+            .attr("transform", "rotate(-90)")
+            .text("Billboard Top 200 Albums Chart Placement");
+
+    })
+    
+    </script>
